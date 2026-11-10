@@ -1,0 +1,67 @@
+# ---------- Java / Maven ----------
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+.flattened-pom.xml
+*.class
+hs_err_pid*
+replay_pid*
+
+# ---------- Node / Angular ----------
+node_modules/
+dist/
+.angular/
+coverage/
+npm-debug.log*
+yarn-error.log*
+.npm/
+
+# ---------- Terraform ----------
+# Commit .terraform.lock.hcl; ignore state, plans and local variable files.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+!*.tfvars.example
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# ---------- Local Docker data ----------
+infra/local/data/
+
+# ---------- Secrets and personal files ----------
+.env*
+!.env.example
+*.pem
+*.key
+CLAUDE.local.md
+.claude/settings.local.json
+
+# ---------- Editors ----------
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+*.swp
+*~
+
+# ---------- OS ----------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ---------- Logs and temp ----------
+*.log
+logs/
+tmp/
