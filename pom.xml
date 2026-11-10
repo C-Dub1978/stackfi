@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!--
+		Inheriting from Spring Boot's parent gives every module:
+		- managed versions for every Spring, Testcontainers, Postgres driver, Flyway... dependency,
+		  so module POMs list dependencies without <version> tags
+		- sensible plugin defaults (compiler, surefire for tests, spring-boot-maven-plugin)
+		Upgrading Spring Boot later means changing this one version number.
+	-->
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.1.2</version>
+		<relativePath/> <!-- look the parent up in Maven Central, not on disk -->
+	</parent>
+
+	<groupId>stream.stackfi</groupId>
+	<artifactId>stackfi-parent</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>Stackfi</name>
+	<description>Parent build for the Stackfi API, worker and shared code</description>
+
+	<!-- "pom" packaging: this project produces no jar of its own; it only groups and configures the modules. -->
+	<packaging>pom</packaging>
+
+	<!-- Build order is worked out from dependencies, so common is always built before api and worker. -->
+	<modules>
+		<module>common</module>
+		<module>api</module>
+		<module>worker</module>
+	</modules>
+
+	<properties>
+		<!-- Read by spring-boot-starter-parent to set the compiler's release level for every module. -->
+		<java.version>25</java.version>
+	</properties>
+
+	<!--
+		dependencyManagement only pins versions; it does not add anything to a module's classpath.
+		A module still has to list the dependency, but can leave out <version>.
+		Spring Boot's parent already manages Testcontainers, so no separate Testcontainers BOM is needed.
+	-->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>stream.stackfi</groupId>
+				<artifactId>common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+</project>

@@ -46,7 +46,7 @@ stackfi/
 ├── common/              Shared job messages, entities, enums (Maven module, plain jar).
 ├── web/                 Angular 22 app. Capacitor ios/ and android/ shells come in Phase 10.
 ├── infra/
-│   ├── local/           Docker Compose: Postgres, MinIO, RabbitMQ, Redis
+│   ├── local/           Docker Compose: Postgres, SeaweedFS (S3), RabbitMQ, Redis
 │   └── terraform/       AWS resources (Phase 8)
 ├── docs/                stackfi_platform_planning.md (exported planning doc), decisions/ (decision records)
 ├── pom.xml              Parent POM: <packaging>pom</packaging>, lists api, worker, common as <modules>
@@ -67,11 +67,11 @@ stackfi/
 | Backend | Spring Boot (latest stable): Web, Data JPA, Security, Validation, Actuator |
 | Build | Maven (multi-module, via the Maven wrapper `./mvnw`) |
 | Database | PostgreSQL. Flyway migrations, written by hand in SQL |
-| Object storage | MinIO locally, S3 in production |
+| Object storage | SeaweedFS (S3-compatible) locally, S3 in production. MinIO stopped publishing images (decision 0003) |
 | Queue | RabbitMQ (with a dead-letter queue) |
 | Cache | Redis (rate limits, hot data, progress buffer) |
 | Media | FFmpeg and ffprobe, run from the Java worker |
-| Testing | JUnit 5, Testcontainers (real Postgres, MinIO, RabbitMQ), REST Assured |
+| Testing | JUnit 5, Testcontainers (real Postgres, SeaweedFS, RabbitMQ), REST Assured |
 | API docs | springdoc-openapi. `web/` generates its typed client from the spec |
 | Frontend | Angular 22: standalone, zoneless, signals |
 | UI | HMHA design system: `@halfmanhalfape/hmha-ui` and `@halfmanhalfape/hmha-tokens` (v1.2.0+) |
@@ -84,7 +84,7 @@ stackfi/
 
 ## Architecture: settled decisions
 
-1. **Modular monolith API plus one separate worker.** Organise the API by feature package, not by layer: `com.stackfi.api.{auth, catalog, library, upload, playback, search, playlist, admin}`. Each package owns its controllers, services, repositories and DTOs.
+1. **Modular monolith API plus one separate worker.** Organise the API by feature package, not by layer: `stream.stackfi.api.{auth, catalog, library, upload, playback, search, playlist, admin}`. Each package owns its controllers, services, repositories and DTOs.
 2. **Media bytes never pass through the API.** Uploads go from the browser straight to object storage using presigned multipart URLs. Playback and downloads use short-lived signed URLs or a CDN. The API only checks entitlement and signs URLs.
 3. **The title is separate from its files.** `media_item` is what a title is. `media_asset` and `rendition` are the files that play it. Catalog items and user uploads share one playback path, and only ownership differs.
 4. **Entitlement lives in one service method, used everywhere.** Catalog items (`owner_id IS NULL`) can be streamed by any signed-in user, but not downloaded. Library items can be streamed and downloaded by their owner only. Admins can do everything. Never trust an ID from the client: always check ownership in the service layer.
@@ -117,14 +117,14 @@ Asset status runs `UPLOADING` → `UPLOADED` → `PROCESSING` → `READY` | `FAI
 ## Backend conventions
 
 - **Maven layout:** the root `pom.xml` is the parent. It inherits from `spring-boot-starter-parent` and declares shared versions (Java version, Testcontainers BOM) in `<properties>` and `<dependencyManagement>`. Each module's `pom.xml` names the root as its `<parent>`. `api` and `worker` depend on `common` as a normal `<dependency>`. Only `api` and `worker` use `spring-boot-maven-plugin`, because `common` is a plain library jar, not a runnable app.
-- Base package: `com.stackfi`. Modules use `com.stackfi.api`, `com.stackfi.worker` and `com.stackfi.common`.
+- Base package: `stream.stackfi`. Modules use `stream.stackfi.api`, `stream.stackfi.worker` and `stream.stackfi.common`.
 - Use Java **records** for DTOs and messages. Ask before adding Lombok or MapStruct.
 - REST + JSON under `/api`. Return errors as RFC 9457 Problem Details through `@RestControllerAdvice`.
 - Never return JPA entities from controllers. Map them to DTOs.
 - Use UUID primary keys and `timestamptz` timestamps.
 - Name Flyway migrations `V{n}__{snake_case_description}.sql`. Never edit a migration that has already run; add a new one.
 - Keep configuration in `application.yml`, with `local`, `test` and `prod` profiles. Secrets come from environment variables, never from the repo.
-- Use Testcontainers for integration tests, not mocks of Postgres, MinIO or RabbitMQ.
+- Use Testcontainers for integration tests, not mocks of Postgres, S3 storage or RabbitMQ.
 - Watch for N+1 queries. Use DTO projections or fetch joins, and check them with `EXPLAIN ANALYZE`.
 
 ## Frontend conventions (`web/`)
@@ -159,7 +159,7 @@ Each phase ends with something demoable. Don't start a phase until the previous 
 | 1 | Foundations: Maven multi-module build, Docker Compose, Flyway baseline, health check, CI with Testcontainers | Project structure, profiles, migrations |
 | 2 | Accounts: register, login, refresh, logout, roles, `/me` | Spring Security filter chain, JWT, Problem Details |
 | 3 | Catalog read side: items, series and episodes, albums and tracks, credits, genres, seed data | JPA relationships, N+1, pagination |
-| 4 | Playback of pre-encoded media: MinIO, signed URLs, progress, hls.js player | Object storage, HLS |
+| 4 | Playback of pre-encoded media: S3 storage (SeaweedFS locally), signed URLs, progress, hls.js player | Object storage, HLS |
 | 5 | Uploads and transcoding: Uppy multipart, queue, worker, renditions | Messaging, idempotency, retries |
 | 6 | Library and downloads: My Library, metadata edits, delete with storage cleanup, quotas | Consistency between the database and storage |
 | 7 | Search, playlists, continue watching | Postgres full-text search, Redis caching, query tuning |

@@ -29,7 +29,7 @@ The full design is in the [planning doc](docs/stackfi_platform_planning.md), and
 | Backend | Java 21+, Spring Boot (Web, Data JPA, Security, Validation, Actuator) |
 | Build | Maven multi-module, run through the `./mvnw` wrapper |
 | Database | PostgreSQL with hand-written Flyway migrations |
-| Storage | MinIO locally, S3 in production |
+| Storage | SeaweedFS (S3-compatible) locally, S3 in production |
 | Queue | RabbitMQ, with a dead-letter queue |
 | Cache | Redis |
 | Media | FFmpeg and ffprobe, producing HLS (H.264 and AAC) |
@@ -46,7 +46,7 @@ stackfi/
 ├── common/              Code shared by api and worker: job messages, entities, enums.
 ├── web/                 Angular 22 frontend.
 ├── infra/
-│   ├── local/           Docker Compose: Postgres, MinIO, RabbitMQ, Redis
+│   ├── local/           Docker Compose: Postgres, SeaweedFS (S3), RabbitMQ, Redis
 │   └── terraform/       AWS infrastructure
 ├── docs/                Planning doc and decision records
 └── .github/workflows/   CI, one workflow per app
@@ -67,7 +67,7 @@ Each phase ends with something you can demo, and the next phase doesn't start un
 - [ ] **1. Foundations:** Maven multi-module build, Docker Compose, Flyway baseline, health check, CI with Testcontainers
 - [ ] **2. Accounts:** register, login, refresh, logout, roles, `/me`
 - [ ] **3. Catalog:** movies, series and episodes, albums and tracks, credits, genres, seed data
-- [ ] **4. Playback:** pre-encoded HLS from MinIO, signed URLs, resume position, the hls.js player
+- [ ] **4. Playback:** pre-encoded HLS from S3-compatible storage, signed URLs, resume position, the hls.js player
 - [ ] **5. Uploads and transcoding:** Uppy multipart uploads, the queue, the worker, renditions
 - [ ] **6. Library and downloads:** My Library, metadata edits, deletes with storage cleanup, quotas
 - [ ] **7. Search, playlists, continue watching:** Postgres full-text search, Redis caching

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- The parent is our root pom.xml (Maven finds it at ../pom.xml by default). groupId and version are inherited. -->
+	<parent>
+		<groupId>stream.stackfi</groupId>
+		<artifactId>stackfi-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>common</artifactId>
+	<name>Stackfi Common</name>
+	<description>Job messages, entities and enums shared by the API and the worker</description>
+
+	<!--
+		A plain library jar: no spring-boot-maven-plugin, because common is never run on its own.
+		(That plugin repackages a jar into a runnable "fat jar", which other modules can't depend on.)
+		Dependencies such as jakarta.persistence-api get added here when shared entities arrive in Phase 5.
+	-->
+
+</project>

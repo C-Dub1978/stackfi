@@ -15,3 +15,5 @@ Don't edit or delete an accepted record. If a decision changes, write a new reco
 | # | Decision | Status | Date |
 | --- | --- | --- | --- |
 | [0001](0001-maven-over-gradle.md) | Use Maven, not Gradle, for the Java build | Accepted | 2026-11-09 |
+| [0002](0002-compose-runs-dependencies-only.md) | Docker Compose runs dependencies only until Phase 8 | Accepted | 2026-11-10 |
+| [0003](0003-seaweedfs-replaces-minio-locally.md) | SeaweedFS replaces MinIO for local S3 storage | Accepted | 2026-11-10 |
